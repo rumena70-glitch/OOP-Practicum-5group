@@ -1,2 +1,6 @@
-# OOP-Practicum-5group
-Materials for the Object Oriented Programming @FMI.
+## Обектно-ориентирано програмиране
+
+##### СИ, 1 курс, 5 група практикум, летен семестър, 2025/2026
+
+## Теми
+- **Тема 01**:  [Увод в обектно-ориентираното програмиране.](https://link-url-here.org)
