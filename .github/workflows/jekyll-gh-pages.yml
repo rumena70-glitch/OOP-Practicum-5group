@@ -33,7 +33,7 @@ jobs:
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
-          source: ./Week01
+          source: ./Week01/Theory.md
           destination: ./_site
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
