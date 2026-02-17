@@ -28,6 +28,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      
+      - name: Generate Theory Index
+        run: |
+          echo "---" > index.md
+          echo "layout: default" >> index.md
+          echo "title: Theory Pages" >> index.md
+          echo "---" >> index.md
+          echo "" >> index.md
+          echo "# Theory Pages" >> index.md
+          echo "" >> index.md
+          for dir in Week*/; do
+            if [ -f "${dir}Theory.md" ]; then
+              week_name=$(basename "$dir")
+              echo "- [${week_name} Theory](${dir}Theory.md)" >> index.md
+            fi
+          done
+      
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Build with Jekyll
