@@ -1,0 +1,244 @@
+name: Deploy Theory Pages to GitHub Pages
+
+on:
+  push:
+    branches: ["master"]
+    paths:
+      - 'Week**/Theory.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Build Theory Pages
+        run: |
+          mkdir -p _site
+          
+          # Create index page
+          cat > _site/index.html <<'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>OOP Practicum - Theory Pages</title>
+              <style>
+                  body {
+                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+                      max-width: 800px;
+                      margin: 50px auto;
+                      padding: 20px;
+                      background-color: #f6f8fa;
+                  }
+                  h1 {
+                      color: #24292e;
+                      border-bottom: 1px solid #e1e4e8;
+                      padding-bottom: 10px;
+                  }
+                  ul {
+                      list-style-type: none;
+                      padding: 0;
+                  }
+                  li {
+                      margin: 10px 0;
+                  }
+                  a {
+                      color: #0366d6;
+                      text-decoration: none;
+                      font-size: 18px;
+                  }
+                  a:hover {
+                      text-decoration: underline;
+                  }
+              </style>
+          </head>
+          <body>
+              <h1>OOP Practicum - Theory Pages</h1>
+              <ul id="week-list"></ul>
+              <script>
+                  // This will be populated by the build script
+              </script>
+          </body>
+          </html>
+          EOF
+          
+          # Find all Week directories and process Theory.md files
+          WEEKS_JSON="["
+          FIRST=true
+          
+          for week_dir in Week[0-9][0-9]; do
+            if [ -d "$week_dir" ] && [ -f "$week_dir/Theory.md" ]; then
+              echo "Processing $week_dir/Theory.md"
+              
+              # Extract week number
+              WEEK_NUM=$(echo $week_dir | sed 's/Week//')
+              
+              # Create directory for this week
+              mkdir -p "_site/$week_dir"
+              
+              # Convert markdown to HTML using GitHub API styling
+              cat > "_site/$week_dir/index.html" <<EOF
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Week $WEEK_NUM - Theory</title>
+              <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.0/github-markdown.min.css">
+              <style>
+                  .markdown-body {
+                      box-sizing: border-box;
+                      min-width: 200px;
+                      max-width: 980px;
+                      margin: 0 auto;
+                      padding: 45px;
+                  }
+                  @media (max-width: 767px) {
+                      .markdown-body {
+                          padding: 15px;
+                      }
+                  }
+                  .back-link {
+                      display: block;
+                      margin-bottom: 20px;
+                      color: #0366d6;
+                      text-decoration: none;
+                  }
+                  .back-link:hover {
+                      text-decoration: underline;
+                  }
+              </style>
+          </head>
+          <body>
+              <article class="markdown-body">
+                  <a href="../" class="back-link">← Back to All Weeks</a>
+                  <div id="content"></div>
+              </article>
+              <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+              <script>
+                  fetch('../data/$week_dir-theory.md')
+                      .then(response => response.text())
+                      .then(text => {
+                          document.getElementById('content').innerHTML = marked.parse(text);
+                      });
+              </script>
+          </body>
+          </html>
+          EOF
+              
+              # Copy the markdown file for client-side rendering
+              mkdir -p "_site/data"
+              cp "$week_dir/Theory.md" "_site/data/$week_dir-theory.md"
+              
+              # Add to JSON array for index
+              if [ "$FIRST" = true ]; then
+                FIRST=false
+              else
+                WEEKS_JSON+=","
+              fi
+              WEEKS_JSON+="{\"num\":\"$WEEK_NUM\",\"dir\":\"$week_dir\"}"
+            fi
+          done
+          
+          WEEKS_JSON+="]"
+          
+          # Update index.html with the weeks list
+          cat > _site/index.html <<EOF
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>OOP Practicum - Theory Pages</title>
+              <style>
+                  body {
+                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+                      max-width: 800px;
+                      margin: 50px auto;
+                      padding: 20px;
+                      background-color: #f6f8fa;
+                  }
+                  h1 {
+                      color: #24292e;
+                      border-bottom: 1px solid #e1e4e8;
+                      padding-bottom: 10px;
+                  }
+                  ul {
+                      list-style-type: none;
+                      padding: 0;
+                  }
+                  li {
+                      margin: 10px 0;
+                      padding: 15px;
+                      background-color: white;
+                      border-radius: 6px;
+                      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                  }
+                  a {
+                      color: #0366d6;
+                      text-decoration: none;
+                      font-size: 18px;
+                  }
+                  a:hover {
+                      text-decoration: underline;
+                  }
+                  .no-weeks {
+                      color: #586069;
+                      font-style: italic;
+                  }
+              </style>
+          </head>
+          <body>
+              <h1>OOP Practicum - Theory Pages</h1>
+              <ul id="week-list"></ul>
+              <script>
+                  const weeks = $WEEKS_JSON;
+                  const list = document.getElementById('week-list');
+                  
+                  if (weeks.length === 0) {
+                      list.innerHTML = '<li class="no-weeks">No theory pages found.</li>';
+                  } else {
+                      weeks.sort((a, b) => a.num.localeCompare(b.num));
+                      weeks.forEach(week => {
+                          const li = document.createElement('li');
+                          li.innerHTML = '<a href="' + week.dir + '/">Week ' + week.num + ' - Theory</a>';
+                          list.appendChild(li);
+                      });
+                  }
+              </script>
+          </body>
+          </html>
+          EOF
+          
+          echo "Build complete!"
+          ls -la _site/
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
