@@ -131,7 +131,7 @@ class StudentSerializer {
         }
         println(ofs, "{};{};{}", student.getName(), student.getFacultyNumber(), student.getPassword());
     }
-};
+};;
 int main() {
     StudentSerializer serializer;
     serializer.setInputFileName("studentInput.txt");

@@ -94,7 +94,7 @@ int main() {
         {"Angel", "Lead Software Engineer", 5000, 5},
         {"Vasil", "Software Engineer", 6000, 6},
         {"Anton", "Senior Software Engineer", 7000, 7}
-    };
+    };;
     const Firm firm2{employees2[0], employees2[1], employees2[2]};
     serializer.setFirm(firm2);
     serializer.write();

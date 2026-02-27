@@ -107,4 +107,4 @@ int main() {
         serializer.setCurrency(i);
         serializer.save();
     }
-}
+};
