@@ -75,7 +75,7 @@ void ImageManager::addFilter(const std::string &imageName, const std::string &fi
     }
     auto f = createFilterByName(filterName);
     if (!f) {
-        std::cout << "Unknown filter '" << filterName << "'." << std::endl;
+        std::cout << "Error! Unknown filter '" << filterName << "'." << std::endl;
         return;
     }
     pipelines[idx].filters.push_back(std::move(f));
