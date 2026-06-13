@@ -11,4 +11,11 @@ add_executable(ImageLab main.cpp
         PPMImage.cpp
         PPMImage.h
         PBMImage.cpp
-        PBMImage.h)
+        PBMImage.h
+        Filter.h
+        NegativeFilter.cpp
+        NegativeFilter.h
+        BlurFilter.cpp
+        BlurFilter.h
+        SharpenFilter.cpp
+        SharpenFilter.h)
