@@ -18,4 +18,6 @@ add_executable(ImageLab main.cpp
         BlurFilter.cpp
         BlurFilter.h
         SharpenFilter.cpp
-        SharpenFilter.h)
+        SharpenFilter.h
+        ImageManager.cpp
+        ImageManager.h)
