@@ -11,7 +11,7 @@
 int ImageManager::findPipelineIndex(const std::string &name) const {
     for (size_t i = 0; i < pipelines.size(); ++i) {
         if (pipelines[i].imageName == name) {
-            return static_cast<int>(i);
+            return (int) i;
         }
     }
     return -1;
