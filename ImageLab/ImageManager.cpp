@@ -8,6 +8,7 @@
 #include "PPMImage.h"
 #include "SharpenFilter.h"
 #include "SobelFilter.h"
+#include "ThresholdFilter.h"
 
 
 int ImageManager::findPipelineIndex(const std::string &name) const {
@@ -44,6 +45,19 @@ std::unique_ptr<Filter> ImageManager::createFilterByName(const std::string &filt
     }
     if (filterName == "normalize") {
         return std::make_unique<NormalizeFilter>();
+    }
+    if (filterName.substr(0, 9) == "threshold") {
+        size_t colonPos = filterName.find(':');
+        if (colonPos != std::string::npos) {
+            try {
+                int thresh = std::stoi(filterName.substr(colonPos + 1));
+                return std::make_unique<ThresholdFilter>(thresh);
+            }
+            catch (...) {
+                std::cout << "Invalid threshold format. Using default value (128)." << std::endl;
+            }
+        }
+        return std::make_unique<ThresholdFilter>();
     }
     return nullptr;
 }

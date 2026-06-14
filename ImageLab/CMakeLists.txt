@@ -24,4 +24,6 @@ add_executable(ImageLab main.cpp
         SobelFilter.cpp
         SobelFilter.h
         NormalizeFilter.cpp
-        NormalizeFilter.h)
+        NormalizeFilter.h
+        ThresholdFilter.cpp
+        ThresholdFilter.h)
