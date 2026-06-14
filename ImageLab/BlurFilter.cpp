@@ -42,3 +42,7 @@ void BlurFilter::execute(Image &image) {
         }
     }
 }
+
+std::string BlurFilter::getName() const {
+    return "Blur";
+}

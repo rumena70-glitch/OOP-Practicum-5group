@@ -13,3 +13,7 @@ void NegativeFilter::execute(Image &image) {
         }
     }
 }
+
+std::string NegativeFilter::getName() const {
+    return "Negative";
+}

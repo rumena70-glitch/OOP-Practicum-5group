@@ -58,3 +58,7 @@ void SharpenFilter::execute(Image &image) {
         }
     }
 }
+
+std::string SharpenFilter::getName() const {
+    return "Sharpen";
+}

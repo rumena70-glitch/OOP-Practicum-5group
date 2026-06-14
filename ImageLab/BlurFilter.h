@@ -6,6 +6,7 @@
 class BlurFilter : public Filter {
 public:
     void execute(Image &image) override;
+    std::string getName() const override;
 };
 
 

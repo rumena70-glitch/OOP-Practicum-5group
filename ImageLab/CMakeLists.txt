@@ -20,4 +20,8 @@ add_executable(ImageLab main.cpp
         SharpenFilter.cpp
         SharpenFilter.h
         ImageManager.cpp
-        ImageManager.h)
+        ImageManager.h
+        SobelFilter.cpp
+        SobelFilter.h
+        NormalizeFilter.cpp
+        NormalizeFilter.h)

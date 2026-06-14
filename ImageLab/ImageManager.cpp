@@ -2,10 +2,12 @@
 
 #include "BlurFilter.h"
 #include "NegativeFilter.h"
+#include "NormalizeFilter.h"
 #include "PBMImage.h"
 #include "PGMImage.h"
 #include "PPMImage.h"
 #include "SharpenFilter.h"
+#include "SobelFilter.h"
 
 
 int ImageManager::findPipelineIndex(const std::string &name) const {
@@ -26,6 +28,22 @@ std::unique_ptr<Filter> ImageManager::createFilterByName(const std::string &filt
     }
     if (filterName == "sharpen") {
         return std::make_unique<SharpenFilter>();
+    }
+    if (filterName.substr(0, 5) == "sobel") {
+        size_t colonPos = filterName.find(':');
+        if (colonPos != std::string::npos) {
+            try {
+                int thresh = std::stoi(filterName.substr(colonPos + 1));
+                return std::make_unique<SobelFilter>(thresh);
+            }
+            catch (const std::exception& e) {
+                std::cout << "Invalid threshold format. Using grayscale mode instead." << std::endl;
+            }
+        }
+        return std::make_unique<SobelFilter>();
+    }
+    if (filterName == "normalize") {
+        return std::make_unique<NormalizeFilter>();
     }
     return nullptr;
 }
@@ -83,12 +101,57 @@ void ImageManager::addFilter(const std::string &imageName, const std::string &fi
 }
 
 void ImageManager::removeFilter(const std::string &imageName, size_t filterIndex) {
+    int idx = findPipelineIndex(imageName);
+    if (idx == -1) {
+        std::cout << "Error! Image '" << imageName << "' not loaded." << std::endl;
+        return;
+    }
+    auto& pipe = pipelines[idx];
+    if (filterIndex >= pipe.filters.size()) {
+        std::cout << "Error! Invalid filter index!" << filterIndex << std::endl;
+        return;
+    }
+    std::string filterName = pipe.filters[filterIndex]->getName();
+    pipe.filters.erase(pipe.filters.begin() + filterIndex);
+    std::cout << "Successfully removed filter '" << filterName
+              << "' from '" << imageName << "' at index " << filterIndex << "." << std::endl;
 }
 
 void ImageManager::showFilters(const std::string &imageName) const {
+    int idx = findPipelineIndex(imageName);
+    if (idx == -1) {
+        std::cout << "Error! Image '" << imageName << "' not loaded." << std::endl;
+        return;
+    }
+    const auto& pipe = pipelines[idx];
+    if (pipe.filters.empty()) {
+        std::cout << "No filters set for '" << imageName << "'." << std::endl;
+        return;
+    }
+    std::cout << "Filters for '" << imageName << "' :" << std::endl;
+    for (size_t i = 0; i < pipe.filters.size(); ++i) {
+        std::cout << "[" << i << "]" << pipe.filters[i] -> getName() << std::endl;
+    }
 }
 
 void ImageManager::showAllFilters() const {
+    if (pipelines.empty()) {
+        std::cout << "No images loaded in memory." << std::endl;
+        return;
+    }
+    std::cout << "Current image pipelines:" << std::endl;
+    for (const auto& pipe : pipelines) {
+        std::cout << "Image: " << pipe.imageName << " ("
+                  << pipe.image -> getWidth() << "x" << pipe.image -> getHeight() << ")" << std::endl;
+        if (pipe.filters.empty()) {
+            std::cout << "No filters added" << std::endl;
+        }
+        else {
+            for (size_t i = 0; i < pipe.filters.size(); ++i) {
+                std::cout << "[" << i << "]" << pipe.filters[i]->getName() << std::endl;
+            }
+        }
+    }
 }
 
 void ImageManager::run(const std::string &imageName) {
@@ -125,4 +188,25 @@ void ImageManager::runAll() {
 }
 
 void ImageManager::save(const std::string &imageName, const std::string &outputName) {
+    int idx = findPipelineIndex(imageName);
+    if (idx == -1) {
+        std::cout << "Error: Image '" << imageName << "' not loaded." << std::endl;
+        return;
+    }
+    auto& pipe = pipelines[idx];
+    if (!pipe.filters.empty()) {
+        std::cout << "Applying remaining filters before saving..." << std::endl;
+        for (const auto& f : pipe.filters) {
+            f -> execute(*pipe.image);
+        }
+        pipe.filters.clear();
+    }
+    std::string finalName = outputName.empty() ? ("saved_" + pipe.imageName) : outputName;
+    try {
+        pipe.image -> save(finalName);
+        std::cout << "Successfully saved result to " << finalName << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cout << "Error saving result: " << e.what() << std::endl;
+    }
 }
